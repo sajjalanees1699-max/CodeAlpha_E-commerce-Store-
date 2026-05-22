@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart — Nova Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-bag"></i> Shopping Cart</h1>
+        {% if cart.items.all %}
+            <p>{{ cart.total_items }} item{{ cart.total_items|pluralize }} in your cart</p>
+        {% endif %}
+    </div>
+
+    {% if cart.items.all %}
+    <div class="cart-layout">
+        <!-- Cart Items -->
+        <div class="cart-items-col">
+            {% for item in cart.items.all %}
+            <div class="cart-item">
+                <div class="cart-item-image">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                        <div class="cart-item-placeholder"><i class="fas fa-image"></i></div>
+                    {% endif %}
+                </div>
+                <div class="cart-item-info">
+                    <a href="{% url 'store:product_detail' item.product.id %}" class="cart-item-name">
+                        {{ item.product.name }}
+                    </a>
+                    {% if item.product.category %}
+                        <span class="cart-item-cat">{{ item.product.category.name }}</span>
+                    {% endif %}
+                    <span class="cart-item-unit-price">Rs. {{ item.product.price }} each</span>
+                </div>
+                <div class="cart-item-qty">
+                    <form method="post" action="{% url 'store:update_cart' item.id %}" class="qty-form">
+                        {% csrf_token %}
+                        <div class="qty-controls">
+                            <button type="button" class="qty-btn" onclick="changeQty(this, -1)">-</button>
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" class="qty-input cart-qty-input" onchange="this.closest('form').submit()">
+                            <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="cart-item-subtotal">
+                    <span>Rs. {{ item.subtotal }}</span>
+                </div>
+                <div class="cart-item-remove">
+                    <form method="post" action="{% url 'store:remove_from_cart' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="remove-btn" title="Remove">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="cart-bottom-actions">
+                <a href="{% url 'store:home' %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="cart-summary-col">
+            <div class="order-summary-card">
+                <h3>Order Summary</h3>
+                <div class="summary-row">
+                    <span>Subtotal ({{ cart.total_items }} items)</span>
+                    <span>Rs. {{ cart.total_price }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span class="summary-free">
+                        {% if shipping == 0 %}Free{% else %}Rs. {{ shipping }}{% endif %}
+                    </span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>Rs. {{ grand_total }}</span>
+                </div>
+                {% if shipping > 0 %}
+                <div class="free-shipping-bar">
+                    <p>Add more items for free shipping on orders over Rs. 2000!</p>
+                </div>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-full btn-lg">
+                        <i class="fas fa-lock"></i> Proceed to Checkout
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}?next={% url 'store:checkout' %}" class="btn btn-primary btn-full btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Login to Checkout
+                    </a>
+                {% endif %}
+                <div class="trust-badges" style="margin-top:16px;">
+                    <div class="trust-item"><i class="fas fa-shield-alt"></i> Secure</div>
+                    <div class="trust-item"><i class="fas fa-truck"></i> Fast Delivery</div>
+                    <div class="trust-item"><i class="fas fa-undo"></i> Returns</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-shopping-bag"></i>
+        <h3>Your cart is empty</h3>
+        <p>Looks like you haven't added anything to your cart yet.</p>
+        <a href="{% url 'store:home' %}" class="btn btn-primary">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeQty(btn, delta) {
+    const form = btn.closest('.qty-form');
+    const input = form.querySelector('.cart-qty-input');
+    const newVal = parseInt(input.value) + delta;
+    const max = parseInt(input.max);
+    if (newVal >= 0 && newVal <= max) {
+        input.value = newVal;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed — Nova Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="confirmation-wrap">
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Order Placed Successfully!</h1>
+        <p class="confirmation-sub">Thank you, <strong>{{ order.full_name }}</strong>! Your order has been received.</p>
+
+        <div class="order-id-badge">Order #{{ order.id }}</div>
+
+        <div class="confirmation-details">
+            <div class="confirm-section">
+                <h3><i class="fas fa-box"></i> Order Items</h3>
+                {% for item in order.items.all %}
+                <div class="confirm-item">
+                    <span class="confirm-item-name">{{ item.product_name }}</span>
+                    <span class="confirm-item-qty">x{{ item.quantity }}</span>
+                    <span class="confirm-item-price">Rs. {{ item.subtotal }}</span>
+                </div>
+                {% endfor %}
+                <div class="confirm-total">
+                    <strong>Total Paid:</strong>
+                    <strong>Rs. {{ order.total_price }}</strong>
+                </div>
+            </div>
+
+            <div class="confirm-section">
+                <h3><i class="fas fa-map-marker-alt"></i> Shipping To</h3>
+                <p>{{ order.full_name }}</p>
+                <p>{{ order.address }}, {{ order.city }}</p>
+                <p>{{ order.postal_code }}</p>
+                <p>{{ order.phone }}</p>
+            </div>
+
+            <div class="confirm-section">
+                <h3><i class="fas fa-wallet"></i> Payment</h3>
+                <p>{{ order.payment_method }}</p>
+                <div class="order-status-badge status-{{ order.status }}">
+                    {{ order.get_status_display }}
+                </div>
+            </div>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{% url 'store:my_orders' %}" class="btn btn-primary">
+                <i class="fas fa-box"></i> View My Orders
+            </a>
+            <a href="{% url 'store:home' %}" class="btn btn-outline">
+                <i class="fas fa-shopping-bag"></i> Continue Shopping
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Nova Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a href="{% url 'store:home' %}">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        {% if product.category %}
+        <a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a>
+        <i class="fas fa-chevron-right"></i>
+        {% endif %}
+        <span>{{ product.name }}</span>
+    </nav>
+
+    <!-- Product Detail -->
+    <div class="product-detail-grid">
+        <!-- Image -->
+        <div class="product-detail-image-col">
+            <div class="product-detail-image-wrap">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-detail-image" id="mainImage">
+                {% else %}
+                    <div class="product-detail-placeholder">
+                        <i class="fas fa-image"></i>
+                    </div>
+                {% endif %}
+                {% if product.discount_percent > 0 %}
+                    <div class="product-badge product-badge-sale detail-badge">-{{ product.discount_percent }}%</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="product-detail-info">
+            {% if product.category %}
+                <span class="product-category">{{ product.category.name }}</span>
+            {% endif %}
+
+            <h1 class="product-detail-name">{{ product.name }}</h1>
+
+            <div class="product-rating product-rating-lg">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.rating %}
+                        <i class="fas fa-star"></i>
+                    {% else %}
+                        <i class="far fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+                <span>{{ product.rating }} / 5.0</span>
+            </div>
+
+            <div class="detail-price-box">
+                <span class="detail-price">Rs. {{ product.price }}</span>
+                {% if product.original_price %}
+                    <span class="detail-price-original">Rs. {{ product.original_price }}</span>
+                    <span class="detail-discount">Save {{ product.discount_percent }}%</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-stock">
+                {% if product.is_in_stock %}
+                    <span class="stock-badge in-stock"><i class="fas fa-check-circle"></i> In Stock ({{ product.stock }} available)</span>
+                {% else %}
+                    <span class="stock-badge out-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-description">
+                <h3>Description</h3>
+                <p>{{ product.description }}</p>
+            </div>
+
+            {% if product.is_in_stock %}
+            <form method="post" action="{% url 'store:add_to_cart' product.id %}" class="add-to-cart-form">
+                {% csrf_token %}
+                <div class="quantity-selector">
+                    <label>Quantity:</label>
+                    <div class="qty-controls">
+                        <button type="button" class="qty-btn" id="qtyMinus">-</button>
+                        <input type="number" name="quantity" id="qtyInput" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+                        <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <a href="{% url 'store:cart' %}" class="btn btn-outline btn-lg">
+                        <i class="fas fa-shopping-bag"></i> View Cart
+                    </a>
+                </div>
+            </form>
+            {% else %}
+            <div class="detail-actions">
+                <button class="btn btn-disabled btn-lg" disabled>Out of Stock</button>
+            </div>
+            {% endif %}
+
+            <!-- Trust badges -->
+            <div class="trust-badges">
+                <div class="trust-item"><i class="fas fa-shield-alt"></i> Secure Payment</div>
+                <div class="trust-item"><i class="fas fa-truck"></i> Fast Delivery</div>
+                <div class="trust-item"><i class="fas fa-undo"></i> Easy Returns</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Related Products</h2>
+                <p class="section-sub">You might also like</p>
+            </div>
+        </div>
+        <div class="products-grid">
+            {% for product in related_products %}
+            {% include 'store/_product_card.html' %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const qtyInput = document.getElementById('qtyInput');
+    const maxQty = {{ product.stock }};
+
+    document.getElementById('qtyMinus').addEventListener('click', () => {
+        if (qtyInput.value > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
+    });
+    document.getElementById('qtyPlus').addEventListener('click', () => {
+        if (qtyInput.value < maxQty) qtyInput.value = parseInt(qtyInput.value) + 1;
+    });
+</script>
+{% endblock %}

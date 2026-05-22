@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nova Store{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ===== TOP ANNOUNCEMENT BAR ===== -->
+<div class="announcement-bar">
+    <p><i class="fas fa-truck"></i> Free shipping on orders over Rs. 2000 &nbsp;|&nbsp; <i class="fas fa-shield-alt"></i> Secure Payments &nbsp;|&nbsp; <i class="fas fa-undo"></i> Easy Returns</p>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <!-- Logo -->
+        <a href="{% url 'store:home' %}" class="navbar-brand">
+            <div class="brand-icon"><i class="fas fa-bolt"></i></div>
+            <span>Nova<strong>Store</strong></span>
+        </a>
+
+        <!-- Search bar -->
+        <form action="{% url 'store:home' %}" method="get" class="navbar-search">
+            <div class="search-wrapper">
+                <input type="text" name="search" placeholder="Search for products..." class="search-input"
+                    value="{{ search_query|default:'' }}">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Nav Actions -->
+        <div class="navbar-actions">
+            {% if user.is_authenticated %}
+                <div class="nav-dropdown-wrapper">
+                    <button class="nav-action-btn" id="userMenuBtn">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="nav-label">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down nav-chevron"></i>
+                    </button>
+                    <div class="nav-dropdown" id="userMenu">
+                        <a href="{% url 'store:my_orders' %}"><i class="fas fa-box"></i> My Orders</a>
+                        <hr>
+                        <form method="post" action="{% url 'accounts:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-btn">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="nav-action-btn">
+                    <i class="fas fa-user"></i>
+                    <span class="nav-label">Login</span>
+                </a>
+            {% endif %}
+
+            <!-- Cart -->
+            <a href="{% url 'store:cart' %}" class="nav-action-btn cart-btn">
+                <div class="cart-icon-wrapper">
+                    <i class="fas fa-shopping-bag"></i>
+                    {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                    {% endif %}
+                </div>
+                <span class="nav-label">Cart</span>
+            </a>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button class="hamburger" id="hamburger">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <!-- Category Nav -->
+    <div class="category-nav">
+        <div class="category-nav-inner">
+            <a href="{% url 'store:home' %}" class="cat-link {% if not selected_category %}active{% endif %}">
+                All Products
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'store:category' cat.slug %}" class="cat-link {% if selected_category == cat.slug %}active{% endif %}">
+                <i class="{{ cat.icon }}"></i> {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</nav>
+
+<!-- ===== FLASH MESSAGES ===== -->
+{% if messages %}
+<div class="messages-wrap">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== CONTENT ===== -->
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <div class="footer-brand">
+                <div class="brand-icon brand-icon-sm"><i class="fas fa-bolt"></i></div>
+                <span>Nova<strong>Store</strong></span>
+            </div>
+            <p>Your one-stop shop for everything. Quality products at the best prices.</p>
+            <div class="footer-socials">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Shop</h4>
+            <ul>
+                <li><a href="{% url 'store:home' %}">All Products</a></li>
+                {% for cat in categories %}
+                <li><a href="{% url 'store:category' cat.slug %}">{{ cat.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Account</h4>
+            <ul>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'store:my_orders' %}">My Orders</a></li>
+                <li><a href="{% url 'store:cart' %}">My Cart</a></li>
+                {% else %}
+                <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+                <li><i class="fas fa-envelope"></i> support@novastore.com</li>
+                <li><i class="fas fa-phone"></i> +92 300 1234567</li>
+                <li><i class="fas fa-map-marker-alt"></i> Lahore, Pakistan</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2024 NovaStore. All rights reserved. | Built with Django</p>
+        <div class="payment-icons">
+            <i class="fab fa-cc-visa"></i>
+            <i class="fab fa-cc-mastercard"></i>
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+    </div>
+</footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

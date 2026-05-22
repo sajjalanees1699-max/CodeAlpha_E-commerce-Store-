@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nova Store — Shop Online{% endblock %}
+
+{% block content %}
+
+<!-- ===== HERO SECTION ===== -->
+{% if not search_query and not selected_category %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">New Arrivals 2024</div>
+        <h1>Shop the <span class="hero-highlight">Latest</span> Trends</h1>
+        <p>Discover thousands of products at unbeatable prices. Fast delivery, easy returns.</p>
+        <div class="hero-actions">
+            <a href="#products" class="btn btn-hero">Shop Now <i class="fas fa-arrow-right"></i></a>
+            <a href="#featured" class="btn btn-hero-outline">View Featured</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><span>10K+</span><p>Products</p></div>
+            <div class="hero-stat"><span>50K+</span><p>Customers</p></div>
+            <div class="hero-stat"><span>4.9★</span><p>Rating</p></div>
+        </div>
+    </div>
+    <div class="hero-image">
+        <div class="hero-float-card hero-float-1">
+            <i class="fas fa-truck"></i> Free Delivery
+        </div>
+        <div class="hero-float-card hero-float-2">
+            <i class="fas fa-shield-alt"></i> Secure Pay
+        </div>
+        <div class="hero-graphic">
+            <i class="fas fa-shopping-bag"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Feature Strips -->
+<section class="feature-strip">
+    <div class="feature-strip-inner">
+        <div class="feature-item">
+            <i class="fas fa-truck"></i>
+            <div><h4>Free Shipping</h4><p>On orders over Rs. 2000</p></div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-undo"></i>
+            <div><h4>Easy Returns</h4><p>30-day return policy</p></div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-lock"></i>
+            <div><h4>Secure Payment</h4><p>100% protected payments</p></div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-headset"></i>
+            <div><h4>24/7 Support</h4><p>Dedicated customer service</p></div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== SEARCH RESULTS HEADER ===== -->
+{% if search_query %}
+<div class="page-header">
+    <h2>Search results for "<em>{{ search_query }}</em>"</h2>
+    <p>{{ products.count }} product{{ products.count|pluralize }} found</p>
+</div>
+{% endif %}
+
+<!-- ===== FEATURED PRODUCTS ===== -->
+{% if featured_products and not search_query and not selected_category %}
+<section class="section" id="featured">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Featured Products</h2>
+            <p class="section-sub">Hand-picked top deals just for you</p>
+        </div>
+    </div>
+    <div class="products-grid">
+        {% for product in featured_products %}
+        {% include 'store/_product_card.html' with badge="Featured" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== ALL PRODUCTS ===== -->
+<section class="section" id="products">
+    <div class="section-header">
+        <div>
+            {% if selected_category %}
+                <h2 class="section-title">{{ selected_category|title }}</h2>
+            {% else %}
+                <h2 class="section-title">All Products</h2>
+            {% endif %}
+            <p class="section-sub">{{ products.count }} product{{ products.count|pluralize }} available</p>
+        </div>
+    </div>
+
+    {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            {% include 'store/_product_card.html' %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No products found</h3>
+            <p>Try a different search or browse all categories.</p>
+            <a href="{% url 'store:home' %}" class="btn btn-primary">Browse All</a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
